@@ -32,6 +32,7 @@ async function run() {
 
         const servicesCollection = client.db("volunteerDB").collection("services");
         const addPostsCollection = client.db("volunteerDB").collection("addPosts");
+        const beVolunteerCollection = client.db("volunteerDB").collection("beVolunteer");
 
         // read all services data for homePage
         app.get('/services', async (req, res) => {
@@ -59,6 +60,14 @@ async function run() {
             const query = { _id: new ObjectId(id) }
             const result = await addPostsCollection.findOne(query)
             res.send(result)
+        })
+
+        // Create/save data from the Be Volunteer Post pages
+        app.post('/beVolunteer', async (req, res) => {
+            const beVolunteer = req.body;
+            console.log(beVolunteer);
+            const result = await beVolunteerCollection.insertOne(beVolunteer);
+            res.send(result);
         })
 
 
