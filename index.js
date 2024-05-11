@@ -42,8 +42,14 @@ async function run() {
         // Create/save data from the Add Volunteer Post pages
         app.post('/addPosts', async(req, res)=>{
             const addVolunteer = req.body;
-            console.log(addVolunteer);
+            // console.log(addVolunteer);
             const result = await addPostsCollection.insertOne(addVolunteer);
+            res.send(result);
+        })
+
+        // read all added post data for Need Volunteer Page
+        app.get('/addPosts', async (req, res) => {
+            const result = await addPostsCollection.find().sort({ Deadline: 1 }).toArray();
             res.send(result);
         })
 
