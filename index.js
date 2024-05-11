@@ -40,7 +40,7 @@ async function run() {
         })
 
         // Create/save data from the Add Volunteer Post pages
-        app.post('/addPosts', async(req, res)=>{
+        app.post('/addPosts', async (req, res) => {
             const addVolunteer = req.body;
             // console.log(addVolunteer);
             const result = await addPostsCollection.insertOne(addVolunteer);
@@ -51,6 +51,14 @@ async function run() {
         app.get('/addPosts', async (req, res) => {
             const result = await addPostsCollection.find().sort({ Deadline: 1 }).toArray();
             res.send(result);
+        })
+
+        // get a single data for volunteer details
+        app.get('/addPosts/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await addPostsCollection.findOne(query)
+            res.send(result)
         })
 
 
