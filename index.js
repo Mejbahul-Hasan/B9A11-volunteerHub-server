@@ -75,7 +75,7 @@ async function run() {
             const id = req.params.id
             const updatePost = req.body
             const query = { _id: new ObjectId(id) }
-            const options = {upsert: true}
+            const options = { upsert: true }
             const updateDoc = {
                 $set: {
                     ...updatePost,
@@ -93,12 +93,28 @@ async function run() {
             res.send(result)
         })
 
+        // Read all data posted by user_voltunree_req using email
+        app.get('/beVolunteer-email/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { volunteerEmail: email }
+            const result = await beVolunteerCollection.find(query).toArray();
+            res.send(result)
+        })
+
         // Create/save data from the Be Volunteer Post pages
         app.post('/beVolunteer', async (req, res) => {
             const beVolunteer = req.body;
             // console.log(beVolunteer);
             const result = await beVolunteerCollection.insertOne(beVolunteer);
             res.send(result);
+        })
+
+        // Delete a single data from my_volunteer_request post
+        app.delete('/beVolunteer/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await beVolunteerCollection.deleteOne(query)
+            res.send(result)
         })
 
 
