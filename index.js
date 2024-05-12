@@ -48,13 +48,13 @@ async function run() {
             res.send(result);
         })
 
-        // read all added post data for Need Volunteer Page
+        // Read all added post data for Need Volunteer Page
         app.get('/addPosts', async (req, res) => {
             const result = await addPostsCollection.find().sort({ Deadline: 1 }).toArray();
             res.send(result);
         })
 
-        // get a single data for volunteer details
+        // Read a single data for volunteer details
         app.get('/addPosts/:id', async (req, res) => {
             const id = req.params.id
             const query = { _id: new ObjectId(id) }
@@ -62,11 +62,34 @@ async function run() {
             res.send(result)
         })
 
-        // get all data posted by user
+        // Read all data posted by user using email
         app.get('/addPosts-email/:email', async (req, res) => {
             const email = req.params.email;
             const query = { organizerEmail: email }
             const result = await addPostsCollection.find(query).toArray();
+            res.send(result)
+        })
+
+        // update a data in db
+        app.put('/addPosts/:id', async (req, res) => {
+            const id = req.params.id
+            const updatePost = req.body
+            const query = { _id: new ObjectId(id) }
+            const options = {upsert: true}
+            const updateDoc = {
+                $set: {
+                    ...updatePost,
+                },
+            }
+            const result = await addPostsCollection.updateOne(query, updateDoc, options)
+            res.send(result)
+        })
+
+        // Delete a single data from my volunteer post
+        app.delete('/addPosts/:id', async (req, res) => {
+            const id = req.params.id
+            const query = { _id: new ObjectId(id) }
+            const result = await addPostsCollection.deleteOne(query)
             res.send(result)
         })
 
