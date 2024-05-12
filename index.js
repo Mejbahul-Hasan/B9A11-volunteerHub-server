@@ -62,10 +62,18 @@ async function run() {
             res.send(result)
         })
 
+        // get all data posted by user
+        app.get('/addPosts-email/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { organizerEmail: email }
+            const result = await addPostsCollection.find(query).toArray();
+            res.send(result)
+        })
+
         // Create/save data from the Be Volunteer Post pages
         app.post('/beVolunteer', async (req, res) => {
             const beVolunteer = req.body;
-            console.log(beVolunteer);
+            // console.log(beVolunteer);
             const result = await beVolunteerCollection.insertOne(beVolunteer);
             res.send(result);
         })
