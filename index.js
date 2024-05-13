@@ -29,24 +29,22 @@ const client = new MongoClient(uri, {
 });
 
 // verify jwt middlewares
-const logger = (req, res, next) => {
-    console.log(req.method, req.url)
-    next();
-}
-
 const verifyToken = (req, res, next) => {
     const token = req.cookies?.token;
-    // console.log('token in the middleware', token);
+    console.log('token in the middleware', token);
     if (!token) {
         return res.status(401).send({ message: 'unauthorized access' })
     }
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decode) => {
-        if (err) {
-            return res.status(401).send({ message: "unauthorized access" })
-        }
-        req.user = decoded;
-        next();
-    })
+    if (token) {
+        jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, decode) => {
+            if (err) {
+                console.log(err)
+                return res.status(401).send({ message: "unauthorized access" })
+            }
+            req.user = decode;
+            next();
+        })
+    }
 }
 
 async function run() {
@@ -75,13 +73,13 @@ async function run() {
         app.post('/logOut', async (req, res) => {
             const user = req.body;
             // console.log('logging out', user);
-            res.clearCookie('token', { 
+            res.clearCookie('token', {
                 httpOnly: true,
                 secure: process.env.NODE_ENV === 'production',
                 sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-                maxAge: 0, 
+                maxAge: 0,
             })
-            .send({ success: true })
+                .send({ success: true })
         })
 
 
@@ -116,8 +114,12 @@ async function run() {
         })
 
         // Read all data posted by user using email
-        app.get('/addPosts-email/:email', async (req, res) => {
+        app.get('/addPosts-email/:email', verifyToken, async (req, res) => {
+            const tokenEmail = req.user.email;
             const email = req.params.email;
+            if (tokenEmail !== email) {
+                return res.status(403).send({ message: "forbidden access" })
+            }
             const query = { organizerEmail: email }
             const result = await addPostsCollection.find(query).toArray();
             res.send(result)
@@ -146,9 +148,13 @@ async function run() {
             res.send(result)
         })
 
-        // Read all data posted by user_voltunree_req using email
-        app.get('/beVolunteer-email/:email', async (req, res) => {
+        // Read all data posted by user_volunteer_req using email
+        app.get('/beVolunteer-email/:email', verifyToken, async (req, res) => {
+            const tokenEmail = req.user.email;
             const email = req.params.email;
+            if (tokenEmail !== email) {
+                return res.status(403).send({ message: "forbidden access" })
+            }
             const query = { volunteerEmail: email }
             const result = await beVolunteerCollection.find(query).toArray();
             res.send(result)
@@ -171,7 +177,7 @@ async function run() {
         })
 
         // Send a ping to confirm a successful connection
-        await client.db("admin").command({ ping: 1 });
+        // await client.db("admin").command({ ping: 1 });
         console.log("Pinged your deployment. You successfully connected to MongoDB!");
     } finally {
         // Ensures that the client will close when you finish/error
