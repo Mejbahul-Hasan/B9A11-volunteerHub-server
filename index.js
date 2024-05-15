@@ -8,7 +8,11 @@ const app = express();
 const port = process.env.PORT || 5000;
 
 const corsOptions = {
-    origin: ['http://localhost:5173', 'http://localhost:5174'],
+    origin: [
+        'http://localhost:5173', 
+        'https://volunteerhub-cc355.web.app',
+        'https://volunteerhub-cc355.firebaseapp.com',
+    ],
     credentials: true,
     optionSuccessStatus: 200,
 }
@@ -46,6 +50,11 @@ const verifyToken = (req, res, next) => {
         })
     }
 }
+const cookieOption = {
+    httpOnly: true,
+    sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+    secure: process.env.NODE_ENV === "production" ? true : false,
+}
 
 async function run() {
     try {
@@ -73,14 +82,10 @@ async function run() {
         app.post('/logOut', async (req, res) => {
             const user = req.body;
             // console.log('logging out', user);
-            res.clearCookie('token', {
-                httpOnly: true,
-                secure: process.env.NODE_ENV === 'production',
-                sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'strict',
-                maxAge: 0,
-            })
-                .send({ success: true })
-        })
+            res
+                .clearCookie('token', { ...cookieOption, maxAge: 0 })
+                .send({ success: true });
+        });
 
 
         // Service related api
@@ -104,6 +109,18 @@ async function run() {
             const result = await addPostsCollection.find().sort({ Deadline: 1 }).toArray();
             res.send(result);
         })
+
+        // Read search data for Need Volunteer Page
+        app.get('/search', async (req, res) => {
+            const search = req.query.search;
+            // console.log(search);
+            let query = {
+                postTitle: {$regex: search, $options: 'i'}
+            };
+            const result = await addPostsCollection.find(query).toArray();
+            res.send(result);
+        })
+        
 
         // Read a single data for volunteer details
         app.get('/addPosts/:id', async (req, res) => {
